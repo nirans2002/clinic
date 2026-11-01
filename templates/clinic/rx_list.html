@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Sent Rx{% endblock %}
+{% block content %}
+<div class="card"><div class="acts"><h1>Sent prescriptions</h1><span class="sp"></span>
+  <a class="btn sm {% if not st %}{% else %}sec{% endif %}" href="?">All</a>
+  <a class="btn sm {% if st == 'approved' %}{% else %}sec{% endif %}" href="?status=approved">Waiting at pharmacy</a>
+  <a class="btn sm {% if st == 'dispensed' %}{% else %}sec{% endif %}" href="?status=dispensed">Dispensed</a></div>
+  <div class="tw"><table>
+    <tr><th>Token</th><th>Date</th><th>Patient</th><th>Treatment</th><th>Status</th><th>Approved by</th><th>Dispensed by</th></tr>
+    {% for v in page %}<tr><td>#{{ v.token }}</td><td>{{ v.approved_at|date:"d-m H:i" }}</td>
+      <td><a href="{% url 'clinic:visit_detail' v.pk %}">{{ v.patient.name }}</a></td><td>{{ v.treatment|truncatechars:60|linebreaksbr }}</td>
+      <td><span class="tag {% if v.status == 'dispensed' %}ok{% else %}wn{% endif %}">{% if v.status == 'dispensed' %}Dispensed{% else %}Waiting{% endif %}</span></td>
+      <td class="small">{{ v.approved_by|who }}</td><td class="small">{% if v.dispensed_by %}{{ v.dispensed_by|who }} {{ v.dispensed_at|date:"H:i" }}{% else %}—{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="7">Nothing sent yet. Use “Approve &amp; send to pharmacy” on a visit.</td></tr>{% endfor %}
+  </table></div>{% include "partials/pager.html" %}</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "clinic/print/base_print.html" %}
+{% block title %}Rx · {{ p.name }}{% endblock %}{% block cls %}wide{% endblock %}
+{% block sheet %}
+<div><b>{{ p.name }}</b> · Age {{ p.age }} · {{ p.gender }} · Reg {{ p.reg_no }} · {{ v.date|date:"d/m/Y" }}</div>
+<div class="rxmark">℞</div><pre>{{ v.treatment }}</pre>
+{% if v.remarks %}<p>Note: {{ v.remarks }}</p>{% endif %}
+{% endblock %}

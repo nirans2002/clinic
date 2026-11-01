@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Visit · {{ p.name }}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="acts"><h1><a href="{% url 'clinic:patient_detail' p.pk %}">{{ p.name }}</a> <span class="muted">· {{ v.date|date:"d-m-Y" }}</span></h1><span class="sp"></span>
+    {% if not v.is_locked %}<a class="btn" href="{% url 'clinic:visit_edit' v.pk %}">Edit</a>{% endif %}
+    <a class="btn dk" target="_blank" rel="noopener" href="{% url 'clinic:visit_print' v.pk 'rx' %}?auto=1">Print Rx</a>
+    <a class="btn dk" target="_blank" rel="noopener" href="{% url 'clinic:visit_print' v.pk 'receipt' %}?auto=1">Print bill</a>
+    {% if WHATSAPP_ENABLED %}<a class="btn sec" target="_blank" rel="noopener noreferrer" href="{% url 'clinic:visit_share' v.pk 'rx' %}">Rx (WhatsApp)</a>{% endif %}</div>
+  <p><span class="tag {% if v.status == 'dispensed' %}ok{% elif v.status == 'approved' %}wn{% endif %}">{{ v.get_status_display }}</span>
+    {% if v.token %}<span class="tag">Token #{{ v.token }}</span>{% endif %}
+    {% if v.revised_at and v.status == 'approved' %}<span class="tag red">Revised after approval</span>{% endif %}
+    {% if v.is_locked %}<span class="muted small"> Read-only: dispensed by {{ v.dispensed_by|who }} on {{ v.dispensed_at|date:"d-m-Y H:i" }}{% if v.pharmacy_note %} — “{{ v.pharmacy_note }}”{% endif %}</span>{% endif %}</p>
+  {% if p.allergies %}<div class="alert error">⚠ Allergy / note: {{ p.allergies }}</div>{% endif %}
+  <div class="trio">
+    <div><h3>Symptoms</h3><pre class="pre">{{ v.symptoms|default:"—" }}</pre></div>
+    <div><h3>Investigation</h3><pre class="pre">{{ v.investigations|default:"—" }}</pre></div>
+    <div><h3>Treatment</h3><pre class="pre">{{ v.treatment|default:"—" }}</pre></div>
+  </div>
+  <div class="row">
+    <div><label>Remarks</label>{{ v.remarks|default:"—" }}</div><div><label>Visit type</label>{{ v.visit_type }}</div>
+    <div><label>Consultation</label>{{ v.consultation_fee|inr }}</div><div><label>Medicine</label>{{ v.medicine_fee|inr }}</div>
+    <div><label>Discount</label>{{ v.discount|inr }}</div><div><label>Total ({{ v.payment_method }})</label><b>{{ v.total|inr }}</b></div>
+    <div><label>Due</label>{{ v.due_amount|inr }}</div>
+  </div>
+  <div class="who-line">Added by {{ v.created_by|who }} {{ v.created_at|date:"d-m-Y H:i" }} · Last edited by {{ v.updated_by|who }} {{ v.updated_at|date:"d-m-Y H:i" }}{% if v.approved_by %} · Approved by {{ v.approved_by|who }} {{ v.approved_at|date:"H:i" }}{% endif %}</div>
+</div>
+{% include "partials/trail.html" %}
+{% endblock %}

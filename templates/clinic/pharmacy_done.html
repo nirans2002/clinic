@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Dispensed{% endblock %}
+{% block content %}
+{% include "clinic/pharmacy_tabs.html" %}
+<div class="tabs"><a class="btn sm {% if days != 1 %}sec{% endif %}" href="?days=1">Today</a><a class="btn sm {% if days != 7 %}sec{% endif %}" href="?days=7">7 days</a><a class="btn sm {% if days != 30 %}sec{% endif %}" href="?days=30">30 days</a></div>
+{% regroup page by dispensed_at|date:"D d M" as days_list %}
+{% for d in days_list %}<div class="daysep">{{ d.grouper }} ({{ d.list|length }})</div>{% for v in d.list %}{% include "partials/rx_card.html" %}{% endfor %}
+{% empty %}<div class="card">Nothing dispensed in this period.</div>{% endfor %}
+{% include "partials/pager.html" %}
+{% endblock %}

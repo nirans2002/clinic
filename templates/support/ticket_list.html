@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Support{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="acts"><h1>{% if user.is_admin_role %}Support tickets{% else %}My support tickets{% endif %}</h1><span class="sp"></span>
+    {% if not user.is_admin_role %}<a class="btn" href="{% url 'support:new' %}">+ Raise a ticket</a>{% endif %}</div>
+  <form method="get" class="row">
+    <div><label>Status</label><select name="status"><option value="active" {% if st == 'active' %}selected{% endif %}>Open / in progress</option><option value="all" {% if st == 'all' %}selected{% endif %}>All</option>
+      {% for k, v in statuses %}<option value="{{ k }}" {% if st == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+    <div><label>Category</label><select name="category"><option value="">All</option>{% for k, v in categories %}<option value="{{ k }}" {% if cat == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+    <div><label>Search</label><input name="q" value="{{ q }}" placeholder="{% if user.is_admin_role %}Subject or username{% else %}Subject{% endif %}"></div>
+    <div class="acts"><button class="btn" type="submit">Filter</button></div>
+  </form>
+  <div class="tw"><table>
+    <tr><th>Ticket</th><th>Subject</th>{% if user.is_admin_role %}<th>Raised by</th>{% endif %}<th>Category</th><th>Priority</th><th>Status</th><th>Last activity</th></tr>
+    {% for t in page %}<tr>
+      <td><a href="{% url 'support:detail' t.pk %}">{{ t.ref }}</a></td>
+      <td><a href="{% url 'support:detail' t.pk %}">{{ t.subject }}</a>{% if user.is_admin_role and t.admin_unread or not user.is_admin_role and t.user_unread %} <span class="badge">new</span>{% endif %}</td>
+      {% if user.is_admin_role %}<td>{{ t.created_by|who }} <span class="muted small">({{ t.created_by.get_role_display }})</span></td>{% endif %}
+      <td>{{ t.get_category_display }}</td><td><span class="tag {% if t.priority == 'high' %}red{% endif %}">{{ t.get_priority_display }}</span></td>
+      <td><span class="tag {% if t.status == 'resolved' or t.status == 'closed' %}ok{% elif t.status == 'in_progress' %}wn{% endif %}">{{ t.get_status_display }}</span></td>
+      <td class="small">{{ t.last_activity|date:"d-m-Y H:i" }}</td></tr>
+    {% empty %}<tr><td colspan="7">No tickets.</td></tr>{% endfor %}
+  </table></div>
+  {% include "partials/pager.html" %}
+</div>
+{% endblock %}

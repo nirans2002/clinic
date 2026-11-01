@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Appointments{% endblock %}
+{% block content %}
+<div class="card"><h2>Book appointment</h2>
+  <form method="post">{% csrf_token %}{% include "partials/form_errors.html" %}
+    <div class="row">{% include "partials/field.html" with field=form.patient %}{% include "partials/field.html" with field=form.date %}{% include "partials/field.html" with field=form.time %}{% include "partials/field.html" with field=form.note %}</div>
+    <button class="btn" type="submit">Book</button></form></div>
+<div class="card"><div class="acts"><h2>{% if view == 'past' %}Past{% else %}Upcoming{% endif %}</h2><span class="sp"></span>
+  <a class="btn sm {% if view == 'past' %}sec{% endif %}" href="?view=upcoming">Upcoming</a><a class="btn sm {% if view != 'past' %}sec{% endif %}" href="?view=past">Past</a></div>
+  <div class="tw"><table><tr><th>Date</th><th>Time</th><th>Patient</th><th>Note</th><th>Status</th><th>Booked by</th><th></th></tr>
+  {% for a in appts %}<tr><td>{{ a.date|date:"D d-m-Y" }}</td><td>{{ a.time|time:"H:i"|default:"—" }}</td>
+    <td><a href="{% url 'clinic:patient_detail' a.patient.pk %}">{{ a.patient.name }}</a></td><td>{{ a.note }}</td>
+    <td><span class="tag {% if a.status == 'done' %}ok{% elif a.status == 'cancelled' %}red{% endif %}">{{ a.get_status_display }}</span></td><td class="small muted">{{ a.created_by|who }}</td>
+    <td class="r">{% if a.status == 'booked' or a.status == 'arrived' %}
+      <a class="btn sm" href="{% url 'clinic:visit_new' a.patient.pk %}?appt={{ a.pk }}">Start visit</a>
+      {% if a.status == 'booked' %}<form class="inline" method="post" action="{% url 'clinic:appointment_status' a.pk %}">{% csrf_token %}<input type="hidden" name="status" value="arrived"><button class="btn sm sec" type="submit">Arrived</button></form>{% endif %}
+      <form class="inline" method="post" action="{% url 'clinic:appointment_status' a.pk %}" data-confirm="Cancel this appointment?">{% csrf_token %}<input type="hidden" name="status" value="cancelled"><button class="btn sm red" type="submit">Cancel</button></form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7">No appointments.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

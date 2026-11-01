@@ -1,0 +1,13 @@
+{% extends "clinic/print/base_print.html" %}
+{% block title %}Chronic case · {{ p.name }}{% endblock %}{% block cls %}wide{% endblock %}
+{% block sheet %}
+<h2>Chronic case record</h2>
+<table><tr><td><b>{{ p.name }}</b> · Reg #{{ p.reg_no }}</td><td>{{ p.age }} yrs · {{ p.gender }}{% if p.blood_group %} · {{ p.blood_group }}{% endif %}</td><td>{{ c.date|date:"d/m/Y" }}</td></tr>
+<tr><td colspan="3">Phone: {{ p.phone }}{% if p.place %} · {{ p.place }}{% endif %}</td></tr>
+{% if p.allergies %}<tr><td colspan="3"><b>Allergy / note:</b> {{ p.allergies }}</td></tr>{% endif %}</table>
+{% for title, rows in sections %}
+<div class="visit"><div class="visit-hd"><b>{{ title }}</b></div>
+<table>{% for label, val in rows %}<tr><td class="cclabel">{{ label }}</td><td class="pre-line">{{ val }}</td></tr>{% endfor %}</table></div>
+{% endfor %}
+<p class="small">Case taken by {{ c.created_by.display_name|default:"—" }} · confidential medical record.</p>
+{% endblock %}

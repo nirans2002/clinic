@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Audit log{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="acts"><h1>Audit log</h1><span class="sp"></span><a class="btn sec" href="{% url 'core:audit_export' %}?{{ qs }}">Export CSV</a></div>
+  <p class="muted small">Append-only record of sign-ins, record changes, views, prints, approvals, dispensing and user management. Field <i>values</i> are never copied into the log — only which fields changed.</p>
+  <form method="get" class="row">
+    <div><label>User</label><input name="user" value="{{ f.user }}"></div>
+    <div><label>Action</label><select name="action"><option value="">All</option>{% for k, v in actions %}<option value="{{ k }}" {% if f.action == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+    <div><label>Record contains</label><input name="q" value="{{ f.q }}"></div>
+    <div><label>From</label><input type="date" name="from" value="{{ f.from }}"></div>
+    <div><label>To</label><input type="date" name="to" value="{{ f.to }}"></div>
+    <div class="acts"><button class="btn" type="submit">Filter</button></div>
+  </form>
+  <div class="tw"><table>
+    <tr><th>Time</th><th>User</th><th>Role</th><th>Action</th><th>Record</th><th>Detail</th><th>IP</th></tr>
+    {% for a in page %}<tr><td>{{ a.timestamp|date:"d-m-Y H:i:s" }}</td><td>{{ a.username|default:"—" }}</td><td>{{ a.role }}</td>
+      <td><span class="tag {% if a.action == 'login_failed' or a.action == 'lockout' or a.action == 'denied' %}red{% endif %}">{{ a.get_action_display }}</span></td>
+      <td>{{ a.object_repr }}</td><td>{{ a.detail }}{% if a.changed_fields %} <span class="muted">[{{ a.changed_fields }}]</span>{% endif %}</td><td>{{ a.ip_address|default:"" }}</td></tr>
+    {% empty %}<tr><td colspan="7">No entries.</td></tr>{% endfor %}
+  </table></div>
+  {% include "partials/pager.html" %}
+</div>
+{% endblock %}

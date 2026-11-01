@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}New bill{% endblock %}
+{% block content %}
+<form method="post" id="bill-form" autocomplete="off">{% csrf_token %}
+{% include "partials/form_errors.html" %}
+<div class="card"><h2>Bill details <span class="muted small">· next number {{ next_no }}</span></h2>
+  <div class="row">{% include "partials/field.html" with field=form.date %}{% include "partials/field.html" with field=form.patient %}{% include "partials/field.html" with field=form.customer_name %}{% include "partials/field.html" with field=form.phone %}{% include "partials/field.html" with field=form.payment_method %}</div></div>
+<div class="card"><h2>Items</h2>
+  {{ formset.management_form }}
+  {% if formset.non_form_errors %}<div class="alert error">{{ formset.non_form_errors }}</div>{% endif %}
+  <datalist id="catalogue-list">{% for c in catalogue %}<option value="{{ c.name }}">{% endfor %}</datalist>
+  {{ catalogue_json|json_script:"catalogue-data" }}
+  <div class="tw"><table><thead><tr><th>Item</th><th>Qty</th><th>Unit price</th><th class="r">Amount</th></tr></thead>
+    <tbody id="bill-rows">{% for f in formset %}<tr class="bill-row">{% for h in f.hidden_fields %}{{ h }}{% endfor %}<td>{{ f.name }}{{ f.name.errors }}</td><td>{{ f.qty }}{{ f.qty.errors }}</td><td>{{ f.unit_price }}{{ f.unit_price.errors }}</td><td class="r amt">0.00</td></tr>{% endfor %}</tbody></table></div>
+  <template id="row-template"><tr class="bill-row">{% for h in formset.empty_form.hidden_fields %}{{ h }}{% endfor %}<td>{{ formset.empty_form.name }}</td><td>{{ formset.empty_form.qty }}</td><td>{{ formset.empty_form.unit_price }}</td><td class="r amt">0.00</td></tr></template>
+  <p><button type="button" class="btn sec sm" id="add-row">+ Add line</button></p>
+  <div class="r"><div class="row bill-disc">{% include "partials/field.html" with field=form.discount %}</div>
+    <div>Subtotal: ₹<span id="bill-sub">0.00</span></div><b class="bigtoken">Grand total: ₹<span id="bill-grand">0.00</span></b></div>
+  <div class="acts"><button class="btn" type="submit">Save &amp; print bill</button><a class="btn sec" href="{% url 'clinic:bills' %}">Cancel</a></div></div>
+</form>
+{% endblock %}

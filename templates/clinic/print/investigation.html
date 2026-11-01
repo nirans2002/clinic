@@ -1,0 +1,5 @@
+{% extends "clinic/print/base_print.html" %}
+{% block title %}Investigation · {{ p.name }}{% endblock %}{% block cls %}wide{% endblock %}
+{% block sheet %}
+<p>Investigation request — <b>{{ p.name }}</b>, {{ p.age }} yrs · {{ v.date|date:"d/m/Y" }}</p><pre>{{ v.investigations }}</pre>
+{% endblock %}

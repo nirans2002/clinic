@@ -1,0 +1,14 @@
+{% extends "clinic/print/base_print.html" %}{% load ui %}
+{% block title %}{{ label_no }} {{ no }}{% endblock %}
+{% block tools %}{% if bill and user.is_doctor and not bill.is_void %}
+<form method="post" action="{% url 'clinic:bill_void' bill.pk %}" class="inline" data-confirm="Void this bill? This cannot be undone.">{% csrf_token %}{{ void_form.reason }}<button class="btn red" type="submit">Void bill</button></form>{% endif %}{% endblock %}
+{% block sheet %}
+{% if bill.is_void %}<div class="watermark">VOID — {{ bill.void_reason }}</div>{% endif %}
+<div><b>{{ label_no }}:</b> {{ no }} &nbsp; <b>Date:</b> {{ date|date:"d/m/Y" }}</div>
+{% if name %}<div><b>{{ cust_label }}:</b> {{ name }}</div>{% endif %}{% if phone %}<div><b>Phone:</b> {{ phone }}</div>{% endif %}
+{% if not quick %}<table><tr><th>Item</th><th>Qty</th><th class="r">Price</th><th class="r">Amount</th></tr>
+{% for n, q, pr, am in rows %}<tr><td>{{ n }}</td><td>{{ q }}</td><td class="r">{{ pr|inr }}</td><td class="r">{{ am|inr }}</td></tr>{% endfor %}</table>
+<div class="r">Subtotal: {{ subtotal|inr }}<br>Discount: {{ discount|inr }}</div>{% endif %}
+<div class="tot">{% if quick %}Amount received{% else %}Grand total{% endif %}: {{ total|inr }}{% if method %} ({{ method }}){% endif %}</div>
+<p class="c">Thank you.</p>
+{% endblock %}

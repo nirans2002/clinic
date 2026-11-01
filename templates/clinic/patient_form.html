@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{% if creating %}New patient{% else %}Edit patient{% endif %}{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>{% if creating %}New registration{% else %}Edit {{ patient.name }} <span class="muted">#{{ patient.reg_no }}</span>{% endif %}</h1>
+  <form method="post">{% csrf_token %}
+    {% include "partials/form_errors.html" %}
+    <div class="row">
+      {% include "partials/field.html" with field=form.name %}{% include "partials/field.html" with field=form.age %}
+      {% include "partials/field.html" with field=form.dob %}{% include "partials/field.html" with field=form.gender %}
+      {% include "partials/field.html" with field=form.phone %}
+    </div>
+    <div class="row">
+      {% include "partials/field.html" with field=form.place %}{% include "partials/field.html" with field=form.address %}
+      {% include "partials/field.html" with field=form.email %}{% include "partials/field.html" with field=form.patient_type %}
+      {% include "partials/field.html" with field=form.diagnosis %}{% include "partials/field.html" with field=form.blood_group %}
+      {% include "partials/field.html" with field=form.referred_by %}{% include "partials/field.html" with field=form.occupation %}
+    </div>
+    {% include "partials/field.html" with field=form.allergies %}
+    {% if not creating %}{% include "partials/field.html" with field=form.is_active %}{% endif %}
+    {% if form.duplicate_found %}{% include "partials/field.html" with field=form.allow_duplicate %}{% else %}{{ form.allow_duplicate.as_hidden }}{% endif %}
+    <div class="acts">
+      {% if creating %}<button class="btn" type="submit" name="then" value="visit">Save &amp; start visit</button>
+      <button class="btn sec" type="submit" name="then" value="chronic">Save &amp; chronic case taking</button>
+      <button class="btn sec" type="submit">Save profile only</button>
+      {% else %}<button class="btn" type="submit">Save changes</button>{% endif %}
+      <a class="btn sec" href="{% if creating %}{% url 'clinic:patients' %}{% else %}{% url 'clinic:patient_detail' patient.pk %}{% endif %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

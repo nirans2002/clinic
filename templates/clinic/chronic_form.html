@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Chronic case · {{ patient.name }}{% endblock %}
+{% block content %}
+<form method="post" id="chronic-form" autocomplete="off">{% csrf_token %}
+{% include "partials/form_errors.html" %}
+<div class="card">
+  <div class="acts"><h1>Chronic case taking</h1><span class="sp"></span>
+    <button type="button" class="btn sec sm" data-details="open">Expand all</button><button type="button" class="btn sec sm" data-details="close">Collapse all</button></div>
+  <div class="row">
+    <div><label>Patient</label><div class="regc">#{{ patient.reg_no }} · <a href="{% url 'clinic:patient_detail' patient.pk %}">{{ patient.name }}</a></div>
+      <span class="muted small">{{ patient.age }} yrs · {{ patient.gender }} · {{ patient.phone }}</span></div>
+    {% include "partials/field.html" with field=form.date %}
+  </div>
+  {% if patient.allergies %}<div class="alert error">⚠ Allergy / note: {{ patient.allergies }}</div>{% endif %}
+  {% if case %}<div class="who-line">Started by {{ case.created_by|who }} {{ case.created_at|date:"d-m-Y H:i" }} · Last edited by {{ case.updated_by|who }} {{ case.updated_at|date:"d-m-Y H:i" }}</div>{% endif %}
+  <p class="help">Fill what applies — empty answers are not stored. Use <b>Save</b> to keep working; <b>Save &amp; finish</b> opens the finished sheet.</p>
+</div>
+{% for key, title, flds, has in form.grouped %}
+<details class="card cc" {% if forloop.counter <= 1 or has or key == "menstrual" and patient.gender == "Female" %}open{% endif %}>
+  <summary><b>{{ title }}</b>{% if has %} <span class="tag ok">filled</span>{% endif %}</summary>
+  <div class="cc-fields">{% for f in flds %}<div class="field {% if f.field.widget.input_type == 'textarea' %}cc-wide{% endif %}"><label for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}{{ f.errors }}</div>{% endfor %}</div>
+</details>
+{% endfor %}
+<div class="card"><div class="acts">
+  <button class="btn" type="submit" name="action" value="save">Save</button>
+  <button class="btn ok" type="submit" name="action" value="finish">Save &amp; finish</button>
+  {% if case %}<a class="btn sec" href="{% url 'clinic:chronic_detail' case.pk %}">View sheet</a>{% endif %}
+  <a class="btn sec" href="{% url 'clinic:patient_detail' patient.pk %}">Back to patient</a></div></div>
+</form>
+{% endblock %}

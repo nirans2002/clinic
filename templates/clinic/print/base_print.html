@@ -1,0 +1,12 @@
+{% load static %}<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
+<title>{% block title %}Print{% endblock %}</title><link rel="stylesheet" href="{% static 'css/app.css' %}"></head>
+<body class="printpage" data-autoprint="{% if autoprint %}1{% endif %}" data-idle="{{ IDLE_TIMEOUT_SECONDS }}">
+<div class="toolbar noprint"><button class="btn" data-print type="button">Print</button><button class="btn sec" type="button" data-close>Close</button>{% block tools %}{% endblock %}</div>
+<div class="sheet {% block cls %}{% endblock %}">
+  <div class="c"><img class="letter" src="{% static 'img/logo.png' %}" alt="">
+    <h2>{{ BIZ.name }}</h2>{% if BIZ.doctor_line %}<div>{{ BIZ.doctor_line }}</div>{% endif %}{% if BIZ.address %}<div>{{ BIZ.address }}</div>{% endif %}{% if BIZ.phone %}<div>Ph: {{ BIZ.phone }}</div>{% endif %}{% if BIZ.gstin %}<div>GSTIN: {{ BIZ.gstin }}</div>{% endif %}</div>
+  <hr>
+  {% block sheet %}{% endblock %}
+</div>
+<form id="logout-form" method="post" action="{% url 'accounts:logout' %}" class="hidden">{% csrf_token %}</form>
+<script src="{% static 'js/app.js' %}"></script></body></html>

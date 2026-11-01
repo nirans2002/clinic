@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Rx #{{ v.token }}{% endblock %}
+{% block content %}
+{% include "partials/rx_card.html" %}
+<div class="card"><h3>Patient</h3><div class="row"><div><label>Name</label>{{ p.name }}</div><div><label>Age / Gender</label>{{ p.age }} · {{ p.gender }}</div><div><label>Phone</label>{{ p.phone }}</div></div>
+<p class="muted small">Pharmacists see only what is needed to dispense — not the clinical history.</p></div>
+{% include "partials/trail.html" %}
+<a class="btn sec" href="{% url 'clinic:pharmacy_queue' %}">← Back to queue</a>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Billing{% endblock %}
+{% block content %}
+<div class="card"><div class="acts"><h1>Bills</h1><span class="sp"></span>
+  <form method="get" class="inline"><input type="search" name="q" value="{{ q }}" placeholder="Bill no / name / phone"></form>
+  <a class="btn" href="{% url 'clinic:bill_new' %}">+ New bill</a></div>
+  <div class="tw"><table><tr><th>No.</th><th>Date</th><th>Customer</th><th class="r">Total</th><th>By</th><th></th></tr>
+  {% for b in page %}<tr><td><a href="{% url 'clinic:bill_detail' b.pk %}">{{ b.number }}</a></td><td>{{ b.date|date:"d-m-Y" }}</td><td>{{ b.customer_name|default:"Walk-in" }}</td>
+    <td class="r">{{ b.total|inr }}</td><td class="small muted">{{ b.created_by|who }}</td><td>{% if b.is_void %}<span class="tag red">Void</span>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="6">No bills yet.</td></tr>{% endfor %}</table></div>{% include "partials/pager.html" %}</div>
+{% endblock %}

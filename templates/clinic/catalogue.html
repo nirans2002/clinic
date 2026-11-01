@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Catalogue{% endblock %}
+{% block content %}
+<div class="grid g2">
+<div class="card"><h2>{% if edit %}Edit item{% else %}Add item{% endif %}</h2>
+  <form method="post" {% if edit %}action="{% url 'clinic:catalogue_edit' edit.pk %}"{% endif %}>{% csrf_token %}{% include "partials/form_errors.html" %}
+    <div class="row">{% include "partials/field.html" with field=form.code %}{% include "partials/field.html" with field=form.name %}{% include "partials/field.html" with field=form.price %}</div>
+    {% if edit %}{% include "partials/field.html" with field=form.is_active %}{% endif %}
+    <button class="btn" type="submit">{% if edit %}Save{% else %}Add{% endif %}</button>{% if edit %} <a class="btn sec" href="{% url 'clinic:catalogue' %}">Cancel</a>{% endif %}</form></div>
+<div class="card"><h2>Import from CSV</h2><p class="muted small">Columns: Code, Item Name, Price. Existing names are updated.</p>
+  <form method="post" enctype="multipart/form-data" action="{% url 'clinic:catalogue_import' %}">{% csrf_token %}{{ import_form.file }}<p><button class="btn sec" type="submit">Import</button></p></form></div></div>
+<div class="card"><div class="acts"><h2>Items</h2><span class="sp"></span><form method="get" class="inline"><input type="search" name="q" value="{{ q }}" placeholder="Search"></form></div>
+  <div class="tw"><table><tr><th>Code</th><th>Item</th><th class="r">Price</th><th>Status</th><th>Last edited by</th><th></th></tr>
+  {% for c in page %}<tr><td>{{ c.code }}</td><td>{{ c.name }}</td><td class="r">{{ c.price|inr }}</td><td>{% if c.is_active %}<span class="tag ok">Active</span>{% else %}<span class="tag red">Hidden</span>{% endif %}</td>
+    <td class="small muted">{{ c.updated_by|who }}</td><td class="r"><a class="btn sm sec" href="{% url 'clinic:catalogue_edit' c.pk %}">Edit</a></td></tr>
+  {% empty %}<tr><td colspan="6">No items.</td></tr>{% endfor %}</table></div>{% include "partials/pager.html" %}</div>
+{% endblock %}

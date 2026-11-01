@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}{{ t.ref }}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="acts"><h1>{{ t.ref }} · {{ t.subject }}</h1><span class="sp"></span>
+    {% if not is_admin and t.status != 'closed' %}<form method="post" action="{% url 'support:close' t.pk %}" class="inline" data-confirm="Close this ticket?">{% csrf_token %}<button class="btn sec" type="submit">Close ticket</button></form>{% endif %}
+    <a class="btn sec" href="{% url 'support:list' %}">← All tickets</a></div>
+  <p><span class="tag {% if t.status == 'resolved' or t.status == 'closed' %}ok{% elif t.status == 'in_progress' %}wn{% endif %}">{{ t.get_status_display }}</span>
+    <span class="tag">{{ t.get_category_display }}</span> <span class="tag {% if t.priority == 'high' %}red{% endif %}">{{ t.get_priority_display }} priority</span></p>
+  <div class="who-line">Raised by {{ t.created_by|who }} ({{ t.created_by.get_role_display }}) · {{ t.created_at|date:"d-m-Y H:i" }}{% if t.resolved_at %} · resolved {{ t.resolved_at|date:"d-m-Y H:i" }}{% endif %}</div>
+  <div class="thread">
+    <div class="msg"><div class="meta"><b>{{ t.created_by|who }}</b> · {{ t.created_at|date:"d-m-Y H:i" }}</div><div class="txt">{{ t.description }}</div></div>
+    {% for m in msgs %}<div class="msg {% if m.is_admin %}admin{% endif %}"><div class="meta"><b>{{ m.author|who }}</b>{% if m.is_admin %} · Administrator{% endif %} · {{ m.created_at|date:"d-m-Y H:i" }}</div><div class="txt">{{ m.body }}</div></div>{% endfor %}
+  </div>
+  <form method="post">{% csrf_token %}{% include "partials/form_errors.html" %}
+    {% include "partials/field.html" with field=form.body %}
+    {% if is_admin %}<div class="row">{% include "partials/field.html" with field=form.status %}</div>{% endif %}
+    <button class="btn" type="submit">{% if is_admin %}Send / update{% else %}Reply{% endif %}</button>
+    {% if not is_admin and t.status == 'closed' or not is_admin and t.status == 'resolved' %}<span class="help">Replying reopens the ticket.</span>{% endif %}
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,2 @@
+<div class="tabs"><a class="btn {% if tab != 'queue' %}sec{% endif %}" href="{% url 'clinic:pharmacy_queue' %}">To dispense{% if tab == 'queue' %} ({{ queue|length }}){% endif %}</a>
+<a class="btn {% if tab != 'done' %}sec{% endif %}" href="{% url 'clinic:pharmacy_done' %}">Dispensed</a></div>

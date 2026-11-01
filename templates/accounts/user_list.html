@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="acts"><h1>Staff accounts</h1><span class="sp"></span>
+    <form method="get" class="inline"><input type="search" name="q" value="{{ request.GET.q }}" placeholder="Search users"></form>
+    <a class="btn" href="{% url 'accounts:user_create' %}">+ New user</a></div>
+  <div class="tw"><table>
+    <tr><th>Username</th><th>Name</th><th>Role</th><th>Mobile / e-mail</th><th>Status</th><th>Last login</th><th>Created</th><th></th></tr>
+    {% for u in users %}
+    <tr>
+      <td><b>{{ u.username }}</b></td><td>{{ u.get_full_name|default:"—" }}</td>
+      <td><span class="tag">{{ u.get_role_display }}</span></td>
+      <td class="small">{{ u.phone|default:"—" }}<br>{{ u.email|default:"—" }}</td>
+      <td>{% if u.is_active %}<span class="tag ok">Active</span>{% else %}<span class="tag red">Disabled</span>{% endif %}{% if u.must_change_password %} <span class="tag wn">Must change password</span>{% endif %}</td>
+      <td>{{ u.last_login|date:"d-m-Y H:i"|default:"never" }}</td>
+      <td class="small muted">{{ u.date_joined|date:"d-m-Y" }}{% if u.created_by %} by {{ u.created_by.username }}{% endif %}</td>
+      <td class="r">
+        <a class="btn sm sec" href="{% url 'accounts:user_edit' u.pk %}">Edit</a>
+        <form class="inline" method="post" action="{% url 'accounts:user_unlock' u.pk %}">{% csrf_token %}<button class="btn sm sec" type="submit">Unlock</button></form>
+        <a class="btn sm red" href="{% url 'accounts:user_reset' u.pk %}">Reset password</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table></div>
+</div>
+{% endblock %}

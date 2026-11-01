@@ -1,0 +1,21 @@
+{% load ui %}
+<aside class="visit-side" aria-label="Past visits">
+  <div class="card">
+    <div class="acts"><h3>Past visits ({{ history_total }})</h3><span class="sp"></span>
+      {% if history_total %}<a class="btn sm sec" target="_blank" rel="noopener" href="{% url 'clinic:patient_history' patient.pk %}">Print all</a>{% endif %}</div>
+    {% for h in history %}
+    <details class="past" {% if forloop.first %}open{% endif %}>
+      <summary><b>{{ h.date|date:"d-m-Y" }}</b> · {{ h.created_by|who }}{% if h.status == 'saved' %} <span class="tag">draft</span>{% endif %}</summary>
+      {% if h.symptoms %}<div class="lbl">Symptoms</div><pre class="pre">{{ h.symptoms }}</pre>{% endif %}
+      {% if h.investigations %}<div class="lbl">Investigation</div><pre class="pre">{{ h.investigations }}</pre>{% endif %}
+      <div class="lbl">Treatment</div><pre class="pre" id="rx-{{ h.pk }}">{{ h.treatment|default:"—" }}</pre>
+      {% if h.remarks %}<div class="small muted">Note: {{ h.remarks }}</div>{% endif %}
+      <div class="acts">{% if h.treatment %}<button type="button" class="btn sm sec" data-copy-rx="rx-{{ h.pk }}">Copy Rx to this visit</button>{% endif %}
+        <a class="btn sm sec" target="_blank" rel="noopener" href="{% url 'clinic:visit_detail' h.pk %}">Open</a></div>
+    </details>
+    {% empty %}<p class="muted">First visit — no earlier history.</p>{% endfor %}
+    {% if history_total > 15 %}<p class="small muted">Showing the latest 15. <a href="{% url 'clinic:patient_detail' patient.pk %}">See all on the patient page</a>.</p>{% endif %}
+  </div>
+  {% if chronic %}<div class="card"><h3>Chronic case sheets</h3>
+    {% for c in chronic %}<div><a target="_blank" rel="noopener" href="{% url 'clinic:chronic_detail' c.pk %}">{{ c.date|date:"d-m-Y" }}</a> <span class="muted small">{{ c.complaint_summary|truncatechars:50 }}</span></div>{% endfor %}</div>{% endif %}
+</aside>

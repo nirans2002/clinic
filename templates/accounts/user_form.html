@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{% if creating %}New user{% else %}Edit user{% endif %}{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>{% if creating %}Create staff account{% else %}Edit {{ u.username }}{% endif %}</h1>
+  <form method="post">{% csrf_token %}
+    {% include "partials/form_errors.html" %}
+    {% if creating %}{% include "partials/field.html" with field=form.username %}{% endif %}
+    {% include "partials/field.html" with field=form.first_name %}
+    {% include "partials/field.html" with field=form.last_name %}
+    {% include "partials/field.html" with field=form.email %}
+    {% include "partials/field.html" with field=form.phone %}
+    {% include "partials/field.html" with field=form.role %}
+    {% if not creating %}{% include "partials/field.html" with field=form.is_active %}{% endif %}
+    {% if creating %}
+      <div class="card sub">
+        <h3>Hand over the temporary password</h3>
+        <p class="help">A strong temporary password is generated and shown once; the user must replace it at first sign-in.</p>
+        {% if email_enabled %}{% include "partials/field.html" with field=form.send_email %}
+        {% else %}<p class="help">E-mail delivery is not configured on this server.</p>{% endif %}
+        {% if wa_enabled %}<p class="help">If you enter a mobile number, a <b>Send via WhatsApp</b> button appears after the account is created.</p>{% endif %}
+      </div>
+    {% endif %}
+    <div class="acts"><button class="btn" type="submit">{% if creating %}Create user{% else %}Save{% endif %}</button><a class="btn sec" href="{% url 'accounts:user_list' %}">Cancel</a></div>
+  </form>
+</div>
+{% endblock %}

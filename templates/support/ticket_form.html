@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Raise a ticket{% endblock %}
+{% block content %}
+<div class="card narrow"><h1>Raise a ticket</h1>
+  <div class="alert warning">Do not type patient names, phone numbers or medical details here. Use the registration number if you must refer to a record.</div>
+  <form method="post">{% csrf_token %}{% include "partials/form_errors.html" %}
+    {% include "partials/field.html" with field=form.subject %}
+    <div class="row">{% include "partials/field.html" with field=form.category %}{% include "partials/field.html" with field=form.priority %}</div>
+    {% include "partials/field.html" with field=form.description %}
+    <div class="acts"><button class="btn" type="submit">Send to administrator</button><a class="btn sec" href="{% url 'support:list' %}">Cancel</a></div>
+  </form></div>
+{% endblock %}

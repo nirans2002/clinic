@@ -1,0 +1,8 @@
+{% load ui %}
+{% if page.paginator.num_pages > 1 %}
+<div class="pager">
+  {% if page.has_previous %}<a class="btn sec sm" href="{% page_url page.previous_page_number %}">‹ Prev</a>{% endif %}
+  <span class="muted small">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="btn sec sm" href="{% page_url page.next_page_number %}">Next ›</a>{% endif %}
+</div>
+{% endif %}

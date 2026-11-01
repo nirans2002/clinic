@@ -1,0 +1,18 @@
+{% load ui %}
+<div class="card rxcard {% if v.status == 'dispensed' %}done{% endif %}">
+  <div class="hd"><b><span class="bigtoken">#{{ v.token }}</span> · {{ v.patient.name }} <span class="muted">· {{ v.patient.age }} yrs · Reg {{ v.patient.reg_no }}</span></b>
+    <span>{% if v.revised_at and v.status == 'approved' %}<span class="tag red">Revised {{ v.revised_at|date:"H:i" }}</span> {% endif %}
+    <span class="tag {% if v.status == 'dispensed' %}ok{% else %}wn{% endif %}">{% if v.status == 'dispensed' %}Dispensed{% else %}Ready{% endif %}</span></span></div>
+  {% if v.patient.allergies %}<div class="alert error">⚠ Allergy / note: {{ v.patient.allergies }}</div>{% endif %}
+  <pre class="pre">{{ v.treatment }}</pre>
+  {% if v.consultation_fee or v.medicine_fee %}<div><b>Fees:</b> Consultation {{ v.consultation_fee|inr }} · Medicine {{ v.medicine_fee|inr }}{% if v.discount %} · Discount {{ v.discount|inr }}{% endif %} · <b>Total {{ v.total|inr }}</b>{% if v.due_amount %} · <span class="tag red">Due {{ v.due_amount|inr }}</span>{% endif %}</div>{% endif %}
+  {% if v.remarks %}<div class="muted">Note: {{ v.remarks }}</div>{% endif %}
+  <div class="who-line">Approved {{ v.approved_at|date:"d-m H:i" }} by {{ v.approved_by|who }}{% if v.status == 'dispensed' %} · ✔ Dispensed {{ v.dispensed_at|date:"d-m H:i" }} by {{ v.dispensed_by|who }}{% if v.pharmacy_note %} · “{{ v.pharmacy_note }}”{% endif %}{% endif %}</div>
+  {% if v.status == 'approved' %}
+  <form method="post" action="{% url 'clinic:pharmacy_dispense' v.pk %}" class="acts">{% csrf_token %}
+    <input type="text" name="note" maxlength="200" placeholder="Optional note (e.g. substituted / partial)" class="note-in">
+    <button class="btn ok" type="submit">Mark dispensed</button>
+    <a class="btn sec" href="{% url 'clinic:pharmacy_detail' v.pk %}">Open</a>
+  </form>
+  {% endif %}
+</div>

@@ -1,0 +1,5 @@
+{% load ui %}
+{% if trail %}
+<div class="card"><h3>Activity history</h3>
+<ul class="trail">{% for a in trail %}<li>{{ a.timestamp|date:"d-m-Y H:i" }} · <b>{{ a.username|default:"system" }}</b> · {{ a.get_action_display }}{% if a.changed_fields %} ({{ a.changed_fields }}){% endif %}{% if a.detail %} · {{ a.detail }}{% endif %}</li>{% endfor %}</ul></div>
+{% endif %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Sign in{% endblock %}
+{% block anon %}
+<div class="center"><div class="box">
+  <img class="lgo" src="{% static 'img/logo.png' %}" alt="Dr. Nipun's Homoeopathy">
+  <p class="sub">Clinic sign-in · authorised staff only</p>
+  {% for m in messages %}<div class="alert {{ m.tags }}" role="status">{{ m }}</div>{% endfor %}
+  <form method="post" autocomplete="on">{% csrf_token %}
+    {% if form.errors %}<div class="alert error">{{ form.non_field_errors.0|default:"Please enter your username and password." }}</div>{% endif %}
+    <div class="field"><label for="id_username">Username</label>{{ form.username }}</div>
+    <div class="field"><label for="id_password">Password</label>{{ form.password }}</div>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn"  type="submit">Sign in</button>
+  </form>
+  <p class="help" >Access is logged. Sessions end automatically after {{ IDLE_TIMEOUT_SECONDS|default:1800 }} seconds of inactivity.</p>
+</div></div>
+{% endblock %}

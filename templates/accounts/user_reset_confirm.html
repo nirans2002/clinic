@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Reset password{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Reset password for {{ u.username }}?</h1>
+  <p>A new temporary password will be generated. Their current sessions end immediately and any login lock-out is cleared.</p>
+  <form method="post" action="{% url 'accounts:user_reset' u.pk %}">{% csrf_token %}
+    {% if email_enabled %}<div class="field"><label><input type="checkbox" name="send_email" {% if u.email %}checked{% else %}disabled{% endif %}> E-mail it to {{ u.email|default:"(no e-mail on file)" }}</label></div>{% endif %}
+    {% if wa_enabled %}<p class="help">{% if u.phone %}A <b>Send via WhatsApp</b> button will appear for {{ u.phone }}.{% else %}No mobile number on file — add one via Edit to use WhatsApp.{% endif %}</p>{% endif %}
+    <div class="acts"><button class="btn red" type="submit">Reset password</button><a class="btn sec" href="{% url 'accounts:user_list' %}">Cancel</a></div>
+  </form>
+</div>
+{% endblock %}

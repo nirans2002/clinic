@@ -1,0 +1,32 @@
+{% extends "clinic/print/base_print.html" %}{% load ui %}
+{% block title %}History · {{ p.name }}{% endblock %}{% block cls %}wide{% endblock %}
+{% block tools %}
+<form method="get" class="inline hist-opts">
+  <label class="inline">From <input type="date" name="from" value="{{ start|date:'Y-m-d' }}"></label>
+  <label class="inline">To <input type="date" name="to" value="{{ end|date:'Y-m-d' }}"></label>
+  <label class="inline"><input type="checkbox" name="inv" value="1" {% if show_inv %}checked{% endif %}> Investigations</label>
+  <label class="inline"><input type="checkbox" name="fees" value="1" {% if show_fees %}checked{% endif %}> Fees</label>
+  <button class="btn sec" type="submit">Apply</button>
+</form>
+{% endblock %}
+{% block sheet %}
+<h2>Case history</h2>
+<table>
+  <tr><td><b>{{ p.name }}</b> · Reg #{{ p.reg_no }}</td><td>{{ p.age }} yrs · {{ p.gender }}{% if p.blood_group %} · {{ p.blood_group }}{% endif %}</td></tr>
+  <tr><td>Phone: {{ p.phone }}</td><td>{% if p.dob %}DOB: {{ p.dob|date:"d/m/Y" }}{% endif %}</td></tr>
+  {% if p.diagnosis %}<tr><td colspan="2">Diagnosis: {{ p.diagnosis }}</td></tr>{% endif %}
+  {% if p.allergies %}<tr><td colspan="2"><b>Allergy / note:</b> {{ p.allergies }}</td></tr>{% endif %}
+</table>
+<p>{{ visits|length }} visit{{ visits|length|pluralize }}{% if start or end %} ({{ start|date:"d/m/Y"|default:"start" }} – {{ end|date:"d/m/Y"|default:"today" }}){% endif %}</p>
+{% for v in visits %}
+<div class="visit">
+  <div class="visit-hd"><b>{{ forloop.counter }}. {{ v.date|date:"d/m/Y" }}</b>{% if v.token %} · Token #{{ v.token }}{% endif %} · {{ v.visit_type }} · {{ v.created_by|who }}{% if v.status == 'saved' %} · <i>draft</i>{% endif %}</div>
+  {% if v.symptoms %}<div><b>Symptoms</b><pre>{{ v.symptoms }}</pre></div>{% endif %}
+  {% if show_inv and v.investigations %}<div><b>Investigations</b><pre>{{ v.investigations }}</pre></div>{% endif %}
+  <div><b>℞ Medicines</b><pre>{{ v.treatment|default:"—" }}</pre></div>
+  {% if v.remarks %}<div>Note: {{ v.remarks }}</div>{% endif %}
+  {% if show_fees %}<div>Consultation {{ v.consultation_fee|inr }} · Medicine {{ v.medicine_fee|inr }}{% if v.discount %} · Discount {{ v.discount|inr }}{% endif %} · <b>Total {{ v.total|inr }}</b></div>{% endif %}
+</div>
+{% empty %}<p>No visits in this period.</p>{% endfor %}
+<p class="small">Printed {{ printed_on|date:"d/m/Y H:i" }} by {{ user.display_name }} — confidential medical record.</p>
+{% endblock %}

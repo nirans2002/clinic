@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}{{ p.name }}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="acts"><h1>{{ p.name }} <span class="muted">· Reg #{{ p.reg_no }}</span></h1><span class="sp"></span>
+    <a class="btn" href="{% url 'clinic:visit_new' p.pk %}">+ New visit</a>
+    <a class="btn dk" href="{% url 'clinic:chronic_new' p.pk %}">Chronic case taking</a>
+    <a class="btn sec" href="{% url 'clinic:appointments' %}?patient={{ p.pk }}">Book appointment</a>
+    <a class="btn sec" target="_blank" rel="noopener" href="{% url 'clinic:patient_history' p.pk %}">Print history</a>
+    <a class="btn sec" href="{% url 'clinic:patient_edit' p.pk %}">Edit</a></div>
+  {% if p.allergies %}<div class="alert error">⚠ Allergy / note: {{ p.allergies }}</div>{% endif %}
+  <div class="row">
+    <div><label>Age / Gender</label>{{ p.age }} yrs · {{ p.gender }}</div><div><label>Phone</label>{{ p.phone }}</div>
+    <div><label>DOB</label>{{ p.dob|date:"d-m-Y"|default:"—" }}</div><div><label>Blood group</label>{{ p.blood_group|default:"—" }}</div>
+    <div><label>Type</label>{{ p.patient_type }}</div><div><label>Diagnosis</label>{{ p.diagnosis|default:"—" }}</div>
+    <div><label>Place / Address</label>{{ p.place }} {{ p.address }}</div><div><label>E-mail</label>{{ p.email|default:"—" }}</div>
+    <div><label>Referred by</label>{{ p.referred_by|default:"—" }}</div><div><label>Occupation</label>{{ p.occupation|default:"—" }}</div>
+  </div>
+  <div class="who-line">Registered {{ p.created_at|date:"d-m-Y H:i" }} by {{ p.created_by|who }} · Last edited {{ p.updated_at|date:"d-m-Y H:i" }} by {{ p.updated_by|who }}</div>
+</div>
+{% if appts %}<div class="card"><h2>Upcoming appointments</h2>{% for a in appts %}<div>{{ a.date|date:"D d-m-Y" }} {{ a.time|time:"H:i" }} · {{ a.note }}</div>{% endfor %}</div>{% endif %}
+<div class="card"><h2>Visit history</h2><div class="tw"><table>
+  <tr><th>Date</th><th>Treatment</th><th>Total</th><th>Status</th><th>By</th><th></th></tr>
+  {% for v in visits %}<tr><td>{{ v.date|date:"d-m-Y" }}</td><td>{{ v.treatment|truncatechars:70|linebreaksbr }}</td><td>{{ v.total|inr }}</td>
+    <td><span class="tag {% if v.status == 'dispensed' %}ok{% elif v.status == 'approved' %}wn{% endif %}">{{ v.get_status_display }}</span></td>
+    <td class="small muted">{{ v.created_by|who }}{% if v.updated_by != v.created_by %} / {{ v.updated_by|who }}{% endif %}</td>
+    <td class="r"><a class="btn sm sec" href="{% url 'clinic:visit_detail' v.pk %}">Open</a></td></tr>
+  {% empty %}<tr><td colspan="6">No visits yet.</td></tr>{% endfor %}
+</table></div></div>
+{% if chronic %}<div class="card"><h2>Chronic case sheets</h2><div class="tw"><table><tr><th>Date</th><th>Chief complaints</th><th>Taken by</th><th></th></tr>
+  {% for c in chronic %}<tr><td>{{ c.date|date:"d-m-Y" }}</td><td>{{ c.complaint_summary|truncatechars:90 }}</td><td class="small muted">{{ c.created_by|who }}{% if c.updated_by != c.created_by %} / {{ c.updated_by|who }}{% endif %}</td>
+    <td class="r"><a class="btn sm sec" href="{% url 'clinic:chronic_detail' c.pk %}">Open</a> <a class="btn sm sec" href="{% url 'clinic:chronic_edit' c.pk %}">Edit</a></td></tr>{% endfor %}</table></div></div>{% endif %}
+{% if bills %}<div class="card"><h2>Bills</h2>{% for b in bills %}<div><a href="{% url 'clinic:bill_detail' b.pk %}">Bill {{ b.number }}</a> · {{ b.date|date:"d-m-Y" }} · {{ b.total|inr }}{% if b.is_void %} <span class="tag red">Void</span>{% endif %}</div>{% endfor %}</div>{% endif %}
+{% include "partials/trail.html" %}
+{% endblock %}

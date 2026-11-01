@@ -1,0 +1,66 @@
+{% load static ui %}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>{% block title %}Clinic{% endblock %} · {{ BIZ.name|default:"Clinic" }}</title>
+<link rel="icon" href="{% static 'img/logo.png' %}">
+<link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body data-idle="{% if user.is_authenticated %}{{ IDLE_TIMEOUT_SECONDS }}{% endif %}" {% block bodydata %}{% endblock %}>
+{% if user.is_authenticated %}
+<header class="top">
+  <a href="{% url 'clinic:dashboard' %}"><img src="{% static 'img/logo-white.png' %}" alt="{{ BIZ.name }}"></a>
+  {% if user.is_doctor %}
+    <a class="pill" href="{% url 'clinic:patient_new' %}">+ New patient</a>
+    <a class="pill" href="{% url 'clinic:sent_rx' %}">Sent Rx</a>
+    <a class="pill" href="{% url 'clinic:appointments' %}">Booking</a>
+    <a class="pill" href="{% url 'clinic:bill_new' %}">Bill</a>
+    <form action="{% url 'clinic:patients' %}" method="get" class="inline"><input class="hsearch" type="search" name="q" placeholder="Find patient…" aria-label="Find patient"></form>
+  {% elif user.is_pharmacist %}
+    <a class="pill" href="{% url 'clinic:pharmacy_queue' %}">Dispense queue</a>
+    <a class="pill" href="{% url 'clinic:bill_new' %}">Counter bill</a>
+  {% elif user.is_admin_role %}
+    <a class="pill" href="{% url 'accounts:user_create' %}">+ New user</a>
+  {% endif %}
+  <span class="sp"></span>
+  <a class="who" href="{% url 'accounts:password_change' %}">{{ user.display_name }}<span class="rolechip">{{ user.get_role_display }}</span></a>
+  <form id="logout-form" method="post" action="{% url 'accounts:logout' %}" class="inline">{% csrf_token %}<button class="pill" type="submit">Logout</button></form>
+</header>
+<div class="wrap">
+  <nav class="side" aria-label="Main">
+    {% with n=request.resolver_match.url_name %}
+    <a class="{% if n == 'dashboard' %}on{% endif %}" href="{% url 'clinic:dashboard' %}">Home</a>
+    {% if user.is_doctor %}
+      <a class="{% if n == 'patients' or n == 'patient_detail' or n == 'patient_edit' or n == 'patient_new' %}on{% endif %}" href="{% url 'clinic:patients' %}">Patients</a>
+      <a class="{% if n == 'appointments' %}on{% endif %}" href="{% url 'clinic:appointments' %}">Appointments</a>
+      <a class="{% if n == 'sent_rx' %}on{% endif %}" href="{% url 'clinic:sent_rx' %}">Sent Rx</a>
+      <a class="{% if n == 'collection' %}on{% endif %}" href="{% url 'clinic:collection' %}">Collection</a>
+      <a class="{% if n == 'bills' or n == 'bill_new' or n == 'bill_detail' %}on{% endif %}" href="{% url 'clinic:bills' %}">Billing</a>
+      <a class="{% if n == 'catalogue' or n == 'catalogue_edit' %}on{% endif %}" href="{% url 'clinic:catalogue' %}">Catalogue</a>
+    {% elif user.is_pharmacist %}
+      <a class="{% if n == 'pharmacy_queue' or n == 'pharmacy_detail' %}on{% endif %}" href="{% url 'clinic:pharmacy_queue' %}">To dispense</a>
+      <a class="{% if n == 'pharmacy_done' %}on{% endif %}" href="{% url 'clinic:pharmacy_done' %}">Dispensed</a>
+      <a class="{% if n == 'bills' or n == 'bill_new' or n == 'bill_detail' %}on{% endif %}" href="{% url 'clinic:bills' %}">Billing</a>
+    {% elif user.is_admin_role %}
+      <a class="{% if n == 'user_list' or n == 'user_edit' or n == 'user_create' %}on{% endif %}" href="{% url 'accounts:user_list' %}">Users</a>
+      <a class="{% if n == 'audit' %}on{% endif %}" href="{% url 'core:audit' %}">Audit log</a>
+      <a class="{% if n == 'settings' %}on{% endif %}" href="{% url 'clinic:settings' %}">Clinic details</a>
+      <a class="{% if n == 'catalogue' or n == 'catalogue_edit' %}on{% endif %}" href="{% url 'clinic:catalogue' %}">Catalogue</a>
+    {% endif %}
+    <a class="{% if request.resolver_match.app_name == 'support' %}on{% endif %}" href="{% url 'support:list' %}">Support{% if SUPPORT_BADGE %} <span class="badge">{{ SUPPORT_BADGE }}</span>{% endif %}</a>
+    <a class="{% if n == 'password_change' %}on{% endif %}" href="{% url 'accounts:password_change' %}">Profile</a>
+    {% endwith %}
+  </nav>
+  <main>
+    {% for m in messages %}<div class="alert {{ m.tags }}" role="status">{{ m }}</div>{% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% else %}
+  {% block anon %}{% endblock %}
+{% endif %}
+<script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

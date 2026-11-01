@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Patients{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="acts"><h1>Patients</h1><span class="sp"></span>
+    <form method="get" class="inline"><input type="search" name="q" value="{{ q }}" placeholder="Name / phone / reg no" autofocus></form>
+    <a class="btn" href="{% url 'clinic:patient_new' %}">+ New patient</a></div>
+  <div class="tw"><table>
+    <tr><th>Reg</th><th>Name</th><th>Age</th><th>Gender</th><th>Phone</th><th>Added by</th><th></th></tr>
+    {% for p in page %}<tr><td>{{ p.reg_no }}</td><td><a href="{% url 'clinic:patient_detail' p.pk %}">{{ p.name }}</a>{% if not p.is_active %} <span class="tag red">Inactive</span>{% endif %}</td>
+      <td>{{ p.age }}</td><td>{{ p.gender }}</td><td>{{ p.phone }}</td><td class="small muted">{{ p.created_by|who }}</td>
+      <td class="r"><a class="btn sm" href="{% url 'clinic:visit_new' p.pk %}">New visit</a></td></tr>
+    {% empty %}<tr><td colspan="7">No patients found.</td></tr>{% endfor %}
+  </table></div>
+  {% include "partials/pager.html" %}
+</div>
+{% endblock %}

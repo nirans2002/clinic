@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Chronic case · {{ p.name }}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="acts"><h1>Chronic case sheet <span class="muted">· {{ c.date|date:"d-m-Y" }}</span></h1><span class="sp"></span>
+    <a class="btn" href="{% url 'clinic:chronic_edit' c.pk %}">Edit</a>
+    <a class="btn dk" target="_blank" rel="noopener" href="{% url 'clinic:chronic_print' c.pk %}?auto=1">Print</a>
+    <a class="btn sec" href="{% url 'clinic:patient_detail' p.pk %}">Back to patient</a></div>
+  <p><b>{{ p.name }}</b> · #{{ p.reg_no }} · {{ p.age }} yrs · {{ p.gender }} · {{ p.phone }}</p>
+  {% if p.allergies %}<div class="alert error">⚠ Allergy / note: {{ p.allergies }}</div>{% endif %}
+  <div class="who-line">Taken by {{ c.created_by|who }} {{ c.created_at|date:"d-m-Y H:i" }} · Last edited by {{ c.updated_by|who }} {{ c.updated_at|date:"d-m-Y H:i" }}</div>
+</div>
+{% for title, rows in sections %}<div class="card"><h2>{{ title }}</h2><dl class="kv wide">{% for label, val in rows %}<dt>{{ label }}</dt><dd class="pre-line">{{ val }}</dd>{% endfor %}</dl></div>
+{% empty %}<div class="card">Nothing recorded yet. <a href="{% url 'clinic:chronic_edit' c.pk %}">Start filling the sheet</a>.</div>{% endfor %}
+{% include "partials/trail.html" %}
+{% endblock %}

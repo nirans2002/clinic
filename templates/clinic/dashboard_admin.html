@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<h1>Administration</h1>
+<div class="grid g4">
+  <a class="card stat statlink" href="{% url 'support:list' %}"><small>Open support tickets</small><div>{{ open_tickets }}{% if unread_tickets %} <span class="badge">{{ unread_tickets }} new</span>{% endif %}</div></a>
+  <div class="card stat"><small>Active doctors</small><div>{{ n_doctors }}</div></div>
+  <div class="card stat"><small>Active pharmacists</small><div>{{ n_pharm }}</div></div>
+  <div class="card stat"><small>Disabled accounts</small><div>{{ n_inactive }}</div></div>
+  <div class="card stat"><small>Failed sign-ins (24h)</small><div>{{ failed_24h }}</div></div>
+  <div class="card stat"><small>Lockouts (24h)</small><div>{{ lockouts_24h }}</div></div>
+  <div class="card stat"><small>Denied access (24h)</small><div>{{ denied_24h }}</div></div>
+</div>
+<div class="card"><h2>Recent activity</h2><div class="tw"><table>
+  <tr><th>Time</th><th>User</th><th>Action</th><th>Record</th></tr>
+  {% for a in recent %}<tr><td>{{ a.timestamp|date:"d-m H:i" }}</td><td>{{ a.username|default:"—" }}</td><td>{{ a.get_action_display }}</td><td>{{ a.object_repr }}</td></tr>{% endfor %}
+</table></div><p><a href="{% url 'core:audit' %}">Open full audit log →</a></p></div>
+<p class="muted small">The admin master account manages staff, clinic details and the audit trail. It has no access to patient records, by design.</p>
+{% endblock %}

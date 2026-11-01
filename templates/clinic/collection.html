@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Collection{% endblock %}
+{% block content %}
+<div class="grid g4">
+  <div class="card stat"><small>Today's collection</small><div>{{ today_total|inr }}</div></div>
+  <div class="card stat"><small>This month</small><div>{{ month_total|inr }}</div></div>
+  <div class="card stat"><small>Selected range</small><div>{{ range_total|inr }}</div></div>
+</div>
+<div class="card">
+  <h1>Collection</h1>
+  <form method="get" class="row">
+    <div class="field"><label>From</label><input type="date" name="from" value="{{ start|date:'Y-m-d' }}"></div>
+    <div class="field"><label>To</label><input type="date" name="to" value="{{ end|date:'Y-m-d' }}"></div>
+    <div class="acts"><button class="btn" type="submit">Show</button></div>
+  </form>
+  <div class="pillrow">
+    <a class="btn sec sm" href="?from={{ today|date:'Y-m-d' }}&to={{ today|date:'Y-m-d' }}">Today</a>
+    <a class="btn sec sm" href="?from={{ yesterday|date:'Y-m-d' }}&to={{ yesterday|date:'Y-m-d' }}">Yesterday</a>
+    <a class="btn sec sm" href="?from={{ month|date:'Y-m-d' }}&to={{ today|date:'Y-m-d' }}">This month</a>
+    <a class="btn sec sm" href="?from={{ d30|date:'Y-m-d' }}&to={{ today|date:'Y-m-d' }}">Last 30 days</a>
+  </div>
+  <p class="muted small">Counts approved / dispensed visits (consultation + medicine, after discount) and non-voided bills. Drafts are excluded.</p>
+  {% if methods %}<p>{% for m, amt in methods %}<span class="tag">{{ m }} {{ amt|inr }}</span> {% endfor %}</p>{% endif %}
+  <div class="tw"><table>
+    <tr><th>Date</th><th class="r">Visits</th><th class="r">Bills</th><th class="r">Total</th><th class="r">Entries</th></tr>
+    {% for r in rows %}<tr><td>{{ r.date|date:"D d-m-Y" }}</td><td class="r">{{ r.visits|inr }}</td><td class="r">{{ r.bills|inr }}</td><td class="r"><b>{{ r.total|inr }}</b></td><td class="r">{{ r.n }}</td></tr>
+    {% empty %}<tr><td colspan="5">No collection in this period.</td></tr>{% endfor %}
+  </table></div>
+</div>
+{% endblock %}

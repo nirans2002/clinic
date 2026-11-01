@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% load ui %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="grid g4">{% for label, val in stats %}<div class="card stat"><small>{{ label }}</small><div>{{ val }}</div></div>{% endfor %}</div>
+<div class="grid g2">
+<div class="card"><h2>Today's appointments</h2><div class="tw"><table>
+  <tr><th>Time</th><th>Patient</th><th>Status</th><th></th></tr>
+  {% for a in appts %}<tr><td>{{ a.time|time:"H:i"|default:"—" }}</td><td><a href="{% url 'clinic:patient_detail' a.patient.pk %}">{{ a.patient.name }}</a><div class="muted small">{{ a.note }}</div></td>
+    <td><span class="tag {% if a.status == 'done' %}ok{% endif %}">{{ a.get_status_display }}</span></td>
+    <td class="r">{% if a.status != 'done' %}<a class="btn sm" href="{% url 'clinic:visit_new' a.patient.pk %}?appt={{ a.pk }}">Start visit</a>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="4">No appointments today.</td></tr>{% endfor %}
+</table></div></div>
+<div class="card"><h2>Today's cases <span class="muted small">(shared by all doctors)</span></h2><div class="tw"><table>
+  <tr><th>Patient</th><th>Status</th><th>Added / edited by</th></tr>
+  {% for v in recent %}<tr><td><a href="{% url 'clinic:visit_detail' v.pk %}">{{ v.patient.name }}</a></td>
+    <td><span class="tag {% if v.status == 'dispensed' %}ok{% elif v.status == 'approved' %}wn{% endif %}">{{ v.get_status_display }}</span></td>
+    <td class="small">{{ v.created_by|who }}{% if v.updated_by and v.updated_by != v.created_by %} · edited by {{ v.updated_by|who }}{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="3">No cases yet today.</td></tr>{% endfor %}
+</table></div></div></div>
+{% endblock %}

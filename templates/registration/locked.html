@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Locked{% endblock %}
+{% block anon %}<div class="center"><div class="box"><img class="lgo" src="{% static 'img/logo.png' %}" alt="">
+<h2>Too many failed attempts</h2><p class="sub">For security this sign-in is locked for {{ cooloff_time|default:"a while" }}. Ask the clinic administrator to unlock your account, or try again later.</p>
+<p class="sub"><a href="{% url 'accounts:login' %}">Back to sign-in</a></p></div></div>{% endblock %}
