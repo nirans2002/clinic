@@ -8,4 +8,8 @@ mkdir -p backups
 docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' \
   | gzip | gpg --batch --yes --pinentry-mode loopback --passphrase-file "${BACKUP_PASSPHRASE_FILE:?set BACKUP_PASSPHRASE_FILE}" \
         --symmetric --cipher-algo AES256 -o "backups/clinic-$STAMP.sql.gz.gpg"
+# Optional off-site copy (Google Cloud): export GCS_BUCKET=my-clinic-backups  (see DEPLOY_GCP.md)
+if [ -n "${GCS_BUCKET:-}" ]; then
+  gcloud storage cp "backups/clinic-$STAMP.sql.gz.gpg" "gs://$GCS_BUCKET/"
+fi
 find backups -name 'clinic-*.gpg' -mtime +30 -delete

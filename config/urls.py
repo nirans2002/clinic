@@ -7,9 +7,11 @@ handler404 = "core.views.not_found"
 handler500 = "core.views.server_error"
 
 urlpatterns = [
-    path(settings.ADMIN_URL, admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("manage/", include("core.urls")),
     path("support/", include("support.urls")),
     path("", include("clinic.urls")),
 ]
+
+if settings.ENABLE_DJANGO_ADMIN:
+    urlpatterns.insert(0, path(settings.ADMIN_URL, admin.site.urls))

@@ -18,10 +18,21 @@ ROOT = Path(__file__).resolve().parent.parent
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--domain", required=True, help="public host name, e.g. clinic.example.com")
+    ap.add_argument("--domain", help="public host name, e.g. clinic.example.com (Docker/VPS mode)")
+    ap.add_argument("--render", action="store_true", help="print the two values to paste into Render instead of writing .env")
     ap.add_argument("--out", default=str(ROOT / ".env"))
     ap.add_argument("--force", action="store_true", help="overwrite an existing file (DANGEROUS)")
     a = ap.parse_args()
+    if a.render:
+        alphabet = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+        pw = "".join(secrets.choice(alphabet) for _ in range(20)) + "-" + secrets.token_hex(2)
+        print("Paste these into the Render dashboard when the Blueprint asks (and keep the first one OFFLINE too):\n")
+        print("FIELD_ENCRYPTION_KEYS      =", base64.urlsafe_b64encode(os.urandom(32)).decode())
+        print("ADMIN_BOOTSTRAP_PASSWORD   =", pw, "   (temporary - you must change it at first sign-in)")
+        print("\nCopy FIELD_ENCRYPTION_KEYS into a password manager + a printed copy NOW. If it is lost, encrypted patient data is unrecoverable.")
+        return
+    if not a.domain:
+        sys.exit("--domain is required (or use --render).")
     out = Path(a.out)
     if out.exists() and not a.force:
         sys.exit(f"{out} already exists - not overwriting. Replacing it would lose the encryption key and make "

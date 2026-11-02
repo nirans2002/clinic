@@ -1,3 +1,5 @@
+import ipaddress
+
 from django.conf import settings
 
 from .models import AuditLog
@@ -6,6 +8,12 @@ from .models import AuditLog
 def client_ip(request):
     if request is None:
         return None
+    if settings.CLIENT_IP_HEADER:  # platform-supplied, unforgeable header (see DEPLOY_RENDER.md)
+        raw = request.META.get("HTTP_" + settings.CLIENT_IP_HEADER.upper().replace("-", "_"), "").split(",")[0].strip()
+        try:
+            return str(ipaddress.ip_address(raw))
+        except ValueError:
+            pass  # header missing or garbage: fall through to the proxy/remote address logic
     if settings.TRUST_PROXY:
         fwd = request.META.get("HTTP_X_FORWARDED_FOR")
         if fwd:

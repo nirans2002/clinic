@@ -1,0 +1,10 @@
+.git
+.env
+.env.*
+!.env.example
+*.sqlite3
+staticfiles
+backups
+__pycache__
+*.pyc
+deploy/certs

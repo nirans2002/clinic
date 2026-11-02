@@ -88,11 +88,11 @@ python manage.py createsuperuser           # this becomes the ADMIN MASTER
 python manage.py runserver
 ```
 Sign in as the master → **Users → + New user** → choose Doctor or Pharmacist → hand over the one-time temporary password.
-Run the tests: `DJANGO_DEBUG=1 python manage.py test` (67 tests: roles, sharing, audit, locking, encryption, lockout, CSP, workflow).
+Run the tests: `DJANGO_DEBUG=1 python manage.py test` (70 tests: roles, sharing, audit, locking, encryption, lockout, CSP, workflow).
 
 ## Production (Docker)
 
-**Full step-by-step guide (secrets, server hardening, HTTPS, backups, updates, rotation): see [DEPLOYMENT.md](DEPLOYMENT.md).**
+**Full step-by-step guides: [DEPLOYMENT.md](DEPLOYMENT.md) (any Linux VPS: secrets, hardening, HTTPS, backups, updates, rotation) and [DEPLOY_GCP.md](DEPLOY_GCP.md) (Google Compute Engine E2 VM: IAP-only SSH, static IP, snapshots, Cloud Storage backups, monitoring).**
 Quick version:
 
 ```bash

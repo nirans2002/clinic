@@ -5,3 +5,4 @@ staticfiles/
 backups/
 *.pyc
 *.zip
+.venv/

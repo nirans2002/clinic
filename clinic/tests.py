@@ -811,3 +811,39 @@ class ChronicCaseTests(Base):
         self.assertRedirects(r, reverse("clinic:chronic_new", args=[p.pk]))
         self.assertContains(self.client.get(reverse("clinic:patient_new")), "chronic case taking")
         self.assertContains(self.client.get(reverse("clinic:patient_detail", args=[p.pk])), "Chronic case taking")
+
+
+class PlatformReadinessTests(Base):
+    def test_healthz_is_public_cheap_and_host_agnostic(self):
+        self.client.logout()
+        r = self.client.get("/healthz", HTTP_HOST="10.0.0.5:10000")
+        self.assertEqual((r.status_code, r.content), (200, b"ok"))
+        self.assertEqual(self.client.post("/healthz").status_code, 404)  # only GET/HEAD are special-cased
+
+    def test_bootstrap_admin_command(self):
+        import os
+        from unittest import mock
+        from django.core.management import call_command
+        User.objects.filter(role=Role.ADMIN).delete()
+        with mock.patch.dict(os.environ, {"ADMIN_BOOTSTRAP_USERNAME": "firstadmin", "ADMIN_BOOTSTRAP_PASSWORD": "short"}):
+            with self.assertRaises(SystemExit):
+                call_command("bootstrap_admin", verbosity=0)
+            self.assertFalse(User.objects.filter(username="firstadmin").exists())
+        with mock.patch.dict(os.environ, {"ADMIN_BOOTSTRAP_USERNAME": "firstadmin", "ADMIN_BOOTSTRAP_PASSWORD": "Quite-Long-Temp-Pass-42"}):
+            call_command("bootstrap_admin", verbosity=0)
+            u = User.objects.get(username="firstadmin")
+            self.assertEqual((u.role, u.must_change_password, u.is_superuser), (Role.ADMIN, True, True))
+            self.assertTrue(u.check_password("Quite-Long-Temp-Pass-42"))
+            call_command("bootstrap_admin", verbosity=0)  # idempotent
+            self.assertEqual(User.objects.filter(role=Role.ADMIN).count(), 1)
+
+    def test_client_ip_resolution(self):
+        from django.test import RequestFactory
+        from core.audit import client_ip
+        rf = RequestFactory()
+        spoof = rf.get("/", HTTP_X_FORWARDED_FOR="6.6.6.6", HTTP_CF_CONNECTING_IP="203.0.113.7", REMOTE_ADDR="10.1.1.1")
+        with override_settings(CLIENT_IP_HEADER="CF-Connecting-IP"):
+            self.assertEqual(client_ip(spoof), "203.0.113.7")
+            self.assertEqual(client_ip(rf.get("/", HTTP_CF_CONNECTING_IP="not-an-ip", REMOTE_ADDR="10.1.1.1")), "10.1.1.1")
+        with override_settings(CLIENT_IP_HEADER="", TRUST_PROXY=False):
+            self.assertEqual(client_ip(spoof), "10.1.1.1")  # forwarded headers ignored unless a proxy is trusted

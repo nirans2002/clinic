@@ -40,8 +40,8 @@ if DEBUG:
     # Fixed *development-only* Fernet key. Never used when DEBUG is off.
     FIELD_ENCRYPTION_KEYS = FIELD_ENCRYPTION_KEYS or ["ZGV2LW9ubHkta2V5LURPLU5PVC1VU0UtSU4tUFJPRCE="]
 else:
-    if not SECRET_KEY or len(SECRET_KEY) < 50:
-        raise ImproperlyConfigured("Set DJANGO_SECRET_KEY (50+ random characters).")
+    if not SECRET_KEY or len(SECRET_KEY) < 32:
+        raise ImproperlyConfigured("Set DJANGO_SECRET_KEY (32+ random characters).")
     if not FIELD_ENCRYPTION_KEYS:
         raise ImproperlyConfigured(
             "Set FIELD_ENCRYPTION_KEYS (comma-separated Fernet keys, newest first). "
@@ -49,14 +49,13 @@ else:
         )
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1" if DEBUG else "")
+CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
+RENDER_HOST = env("RENDER_EXTERNAL_HOSTNAME", "")  # set automatically by Render.com (e.g. clinic-abcd.onrender.com)
+if RENDER_HOST:
+    ALLOWED_HOSTS.append(RENDER_HOST)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_HOST}")
 if not DEBUG and not ALLOWED_HOSTS:
     raise ImproperlyConfigured("Set DJANGO_ALLOWED_HOSTS (comma-separated host names).")
-CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
-
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
 # --------------------------------------------------------------------------- apps
 INSTALLED_APPS = [
@@ -74,6 +73,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "core.middleware.HealthCheckMiddleware",  # answers /healthz before host validation / SSL redirect
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -142,9 +142,18 @@ AUTH_PASSWORD_VALIDATORS = [
 # Lock an account after repeated failures (admin can unlock from the Users page).
 AXES_FAILURE_LIMIT = int(env("AXES_FAILURE_LIMIT", "5"))
 AXES_COOLOFF_TIME = timedelta(minutes=int(env("AXES_COOLOFF_MINUTES", "30")))
-AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"]  # each tracked independently (stops spraying too)
+# Lock by username AND by IP (each tracked independently, stops spraying). Turn the IP part off with
+# AXES_LOCKOUT_BY_IP=0 on platforms where the real client IP is not reliably visible (see DEPLOY_RENDER.md),
+# otherwise every visitor would share one IP and one attacker could lock everyone out.
+AXES_LOCKOUT_BY_IP = env_bool("AXES_LOCKOUT_BY_IP", True)
+AXES_LOCKOUT_PARAMETERS = ["username", "ip_address"] if AXES_LOCKOUT_BY_IP else ["username"]
 AXES_RESET_ON_SUCCESS = True
-if env_bool("TRUST_PROXY", False):  # behind our own reverse proxy: read the client IP it appends
+# Optional: name of a request header that your platform sets to the real client IP and that clients cannot
+# forge (e.g. CF-Connecting-IP behind Cloudflare). Empty = use REMOTE_ADDR / the proxy settings below.
+CLIENT_IP_HEADER = env("CLIENT_IP_HEADER", "").strip()
+if CLIENT_IP_HEADER:
+    AXES_IPWARE_META_PRECEDENCE_ORDER = ["HTTP_" + CLIENT_IP_HEADER.upper().replace("-", "_"), "REMOTE_ADDR"]
+elif env_bool("TRUST_PROXY", False):  # behind our own reverse proxy: read the client IP it appends
     AXES_IPWARE_PROXY_COUNT = 1
     AXES_IPWARE_META_PRECEDENCE_ORDER = ["HTTP_X_FORWARDED_FOR", "REMOTE_ADDR"]
 AXES_LOCKOUT_TEMPLATE = "registration/locked.html"
@@ -200,6 +209,7 @@ TEMP_PASSWORD_HOURS = int(env("TEMP_PASSWORD_HOURS", "48"))  # unused temporary 
 
 # --------------------------------------------------------------------------- app options
 ADMIN_URL = env("DJANGO_ADMIN_URL", "console-admin/").strip("/") + "/"  # not /admin/
+ENABLE_DJANGO_ADMIN = env_bool("ENABLE_DJANGO_ADMIN", True)  # emergency back-office; switch off on hosts without shell
 ENABLE_WHATSAPP_SHARE = env_bool("ENABLE_WHATSAPP_SHARE", True)
 DEFAULT_COUNTRY_CODE = env("DEFAULT_COUNTRY_CODE", "91")
 FIRST_REG_NO = 1001

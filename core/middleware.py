@@ -24,6 +24,21 @@ CSP = "; ".join(
 CSP_ADMIN = CSP.replace("style-src 'self'", "style-src 'self' 'unsafe-inline'")
 
 
+class HealthCheckMiddleware:
+    """GET /healthz -> 200 "ok" for platform health checks. No auth, no DB, no patient data; sits first so the
+    probe works whatever Host header / protocol the platform's internal checker uses."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.path == "/healthz" and request.method in ("GET", "HEAD"):
+            from django.http import HttpResponse
+
+            return HttpResponse("ok", content_type="text/plain")
+        return self.get_response(request)
+
+
 class SecurityHeadersMiddleware:
     """CSP + no-store caching (patient data must never sit in a browser/proxy cache)."""
 
@@ -32,7 +47,7 @@ class SecurityHeadersMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
-        is_admin = request.path.startswith("/" + settings.ADMIN_URL)
+        is_admin = settings.ENABLE_DJANGO_ADMIN and request.path.startswith("/" + settings.ADMIN_URL)
         response.headers.setdefault("Content-Security-Policy", CSP_ADMIN if is_admin else CSP)
         response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
         if not request.path.startswith("/static/"):
