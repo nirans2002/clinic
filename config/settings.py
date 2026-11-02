@@ -246,3 +246,5 @@ LOGGING = {
     "root": {"handlers": ["console"], "level": env("LOG_LEVEL", "INFO")},
     "loggers": {"django.security": {"handlers": ["console"], "level": "WARNING", "propagate": False}},
 }
+
+# test
