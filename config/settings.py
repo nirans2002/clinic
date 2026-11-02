@@ -40,18 +40,32 @@ DEBUG = env_bool("DJANGO_DEBUG", False)
 
 # --------------------------------------------------------------------------- secrets
 SECRET_KEY = env("DJANGO_SECRET_KEY")
-FIELD_ENCRYPTION_KEYS = env_list("FIELD_ENCRYPTION_KEYS")  # newest first; Fernet keys
-if DEBUG:
-    SECRET_KEY = SECRET_KEY or "dev-only-insecure-secret-key-change-me-0123456789abcdef0123456789"
-    # Fixed *development-only* Fernet key. Never used when DEBUG is off.
-    FIELD_ENCRYPTION_KEYS = FIELD_ENCRYPTION_KEYS or ["ZGV2LW9ubHkta2V5LURPLU5PVC1VU0UtSU4tUFJPRCE="]
+FIELD_ENCRYPTION_KEYS = env_list("FIELD_ENCRYPTION_KEYS")
+
+BUILD_MODE = env_bool("DJANGO_BUILD_MODE", False)
+
+if BUILD_MODE:
+    # Temporary values used only during image construction.
+    SECRET_KEY = SECRET_KEY or "build-only-temporary-secret-key-not-for-production-abcdef0123456789abcdef"
+    FIELD_ENCRYPTION_KEYS = FIELD_ENCRYPTION_KEYS or [
+        "ZGV2LW9ubHkta2V5LURPLU5PVC1VU0UtSU4tUFJP56tSU4tUFJ789atSU4tUFJbcdef01234RCE="
+    ]
+
+elif DEBUG:
+    SECRET_KEY = SECRET_KEY or "dev-only-insecure-secret-key-change-me-0123456789abcdef0123456789abcdef"
+    FIELD_ENCRYPTION_KEYS = FIELD_ENCRYPTION_KEYS or [
+        "ZGV2LW9ubHkta2V5LURPLU5FVkVSIFVTRSBJTg=="
+    ]
+
 else:
     if not SECRET_KEY or len(SECRET_KEY) < 50:
-        raise ImproperlyConfigured("Set DJANGO_SECRET_KEY (50+ random characters).")
+        raise ImproperlyConfigured(
+            "Set DJANGO_SECRET_KEY (50+ random characters)."
+        )
+
     if not FIELD_ENCRYPTION_KEYS:
         raise ImproperlyConfigured(
-            "Set FIELD_ENCRYPTION_KEYS (comma-separated Fernet keys, newest first). "
-            "Generate one with: python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\""
+            "Set FIELD_ENCRYPTION_KEYS."
         )
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1" if DEBUG else "")
