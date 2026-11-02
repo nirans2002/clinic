@@ -247,4 +247,4 @@ LOGGING = {
     "loggers": {"django.security": {"handlers": ["console"], "level": "WARNING", "propagate": False}},
 }
 
-# test
+# test 2
